@@ -1,136 +1,71 @@
 #include <stdio.h>
 #include "../include/fixed_size_string.h"
 
-struct FixedString str_from_cstr(const char *str){
-	struct FixedString new_str;
+LoomString ls_init(){
+	LoomString new_ls;
+	new_ls.data[0] =-'\0';
+	new_ls.length = 0;
+	return new_ls;
+}
 
-	// i initialize the string to use these values because *input could
-	// be null, if we didn't give defaults, it would contain garbage values 
-	new_str.length = 0;
-	new_str.data[0] = '\0';
-	
-	// the reason i put MAX_FIXED_SIZE - 1 is because the last character
-	// must be a null character which is '\0'
+LoomString ls_create(const char *str){
+	/*
+	 a design decision i have to make: what if the size of str >= than MAX_SIZE?
+	 i have two options:
+	 > fill upto how many chars i can.
+	 > do not store the string and notify the client (OVERFLOW).
+	*/
+	LoomString new_ls = ls_init();
+
 	if (str != NULL){
-		int i = 0;
-		while (str[i] != '\0' && i < MAX_FIXED_STRING_SIZE - 1){
-			new_str.data[i] = str[i];
-			i++;
+		ls_copy_cstr(&new_ls, str);
+	}
+
+	return new_ls;
+}
+
+void ls_copy(LoomString *dest, const LoomString *src){
+
+	int idx = 0;
+	while (src->data[idx] != '\0' && idx < MAX_SIZE - 1){
+		dest->data[idx] = src->data[idx];
+		idx++;
+	}
+
+	dest->data[idx] = '\0';
+	dest->length = idx;
+}
+
+void ls_copy_cstr(LoomString *dest, const char *src){
+
+	if (src != NULL){
+		int idx = 0;
+		while (src[idx] != '\0' && idx < MAX_SIZE - 1){
+			dest->data[idx] = src[idx];
+			idx++;
 		}
 
-		new_str.data[i] = '\0';
-		new_str.length = i;
+		dest->data[idx] = '\0';
+		dest->length = idx;
 	}
-
-	return new_str;
 }
 
-struct FixedString str_from_fs(struct FixedString fs){
-	struct FixedString new_str;
-	new_str.length = 0;
-	new_str.data[0] = '\0';
+LoomString ls_concat(const LoomString *ls1, const LoomString *ls2){
 
-	int i = 0;
-	while (fs.data[i] != '\0' && i < MAX_FIXED_STRING_SIZE - 1){
-		new_str.data[i] = fs.data[i];
-		i++;
+	LoomString new_ls = ls_init();
+	ls_copy(&new_ls, ls1);
+
+	size_t idx1 = new_ls.length;
+	int idx2 = 0;
+
+	while (ls2->data[idx2] != idx1 < MAX_SIZE - 1){
+		new_ls.data[idx1] = ls2->data[idx2];
+		idx1++;
+		idx2++;
 	}
 
-	new_str.data[i] = '\0';
-	new_str.length = i;
+	new_ls.data[idx1] = '\0';
+	new_ls.length = idx1;
 
-	return new_str;
-}
-
-
-void str_copy_from_cstr(struct FixedString *dest, const char *src){
-
-	int i = 0;
-	while (src[i] != '\0' && i < MAX_FIXED_STRING_SIZE - 1){
-		dest->data[i] = src[i];
-		i++;
-	}
-
-	dest->data[i] = '\0';
-	dest->length = i;
-}
-
-void str_copy_from_fs(struct FixedString *dest, const struct FixedString *src){
-
-	int i = 0;
-	while (src->data[i] != '\0' && i < MAX_FIXED_STRING_SIZE - 1){
-		dest->data[i] = src->data[i];
-		i++;
-	}
-
-	dest->data[i] = '\0';
-	dest->length = i;
-
-}
-
-struct FixedString str_cat_from_fs(struct FixedString *s1, struct FixedString *s2){
-
-	struct FixedString new_str;
-	new_str.length = 0;
-	new_str.data[0] = '\0';
-	
-	if (s1->data[0] == '\0' && s2->data[0] == '\0'){
-		return new_str;
-	}	
-
-	int idx = 0;
-	int i = 0;
-
-	// there might be a better way to do this? 
-	while (s1->data[i] != '\0' && idx < MAX_FIXED_STRING_SIZE - 1){
-		new_str.data[idx++] = s1->data[i++];
-	}
-
-	new_str.data[idx] = '\0';
-	new_str.length = idx;
-	
-	i = 0;
-	while (s2->data[i] != '\0' && idx < MAX_FIXED_STRING_SIZE - 1){
-		new_str.data[idx++] = s2->data[i++];
-	}
-
-	new_str.length = idx;
-	new_str.data[idx] = '\0';
-	return new_str;
-}
-
-struct FixedString str_cat_from_cstr(const char *str1, const char *str2){
-
-	struct FixedString new_str;
-	new_str.length = 0;
-	new_str.data[0] = '\0';
-	
-	if (str1[0] == '\0' && str2[0] == '\0'){
-		return new_str;
-	}	
-
-	int idx = 0;
-	int i = 0;
-
-	// there might be a better way to do this? 
-	while (str1[i] != '\0' && idx < MAX_FIXED_STRING_SIZE - 1){
-		new_str.data[idx++] = str1[i++];
-	}
-
-	new_str.data[idx] = '\0';
-	new_str.length = idx;
-	
-	i = 0;
-	while (str2[i] != '\0' && idx < MAX_FIXED_STRING_SIZE - 1){
-		new_str.data[idx++] = str2[i++];
-	}
-
-	new_str.length = idx;
-	new_str.data[idx] = '\0';
-	return new_str;
-}
-
-
-int string_length(struct FixedString str){
-	return str.length;
+	return new_ls;
 }
