@@ -1,3 +1,5 @@
+#include <stddef.h>
+
 #define MAX_SIZE 20
 
 typedef struct {
@@ -5,10 +7,20 @@ typedef struct {
 	size_t length;
 } LoomString;
 
-LoomString ls_create(const char *str);
+enum LoomCodes {
+	LOOM_OK = 0,
+	LOOM_OVERFLOW,
+	LOOM_NULL_PTR,
+};
 
-void ls_copy(LoomString *dest, const LoomString *src);
-void ls_copy_cstr(LoomString *dest, const char *src);
+LoomString ls_init();
+enum LoomCodes ls_create(LoomString *ls, const char *str);
 
+enum LoomCodes ls_copy(LoomString *dest, const LoomString *src);
+enum LoomCodes ls_copy_str(LoomString *dest, const char *src);
 
-LoomString ls_concat(const LoomString *ls0, const LoomString *ls2);
+enum LoomCodes ls_concat(const LoomString *ls1, const LoomString *ls2, LoomString *out);
+enum LoomCodes ls_concat_str(const LoomString *ls, const char *str, LoomString *out);
+
+enum LoomCodes ls_append_char(LoomString *ls, char ch);
+enum LoomCodes ls_append_str(LoomString *ls, const char *str);

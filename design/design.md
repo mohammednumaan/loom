@@ -7,17 +7,48 @@ the main goal of this utility is to handle strings with less effort. things like
 
 # fixed size strings
 to get things started, working on fixed size strings seems the most logical choice. we can expand this library to support dynamic strings later.
-before we talk about the design and implemention. lets understand how fixed size strings work.
 
-## a primer on fixed size strings
-fixed size strings as the name suggests is an **fixed** length array of characters. the main characteristic of such strings is their **fixed length**. since the size of the string is pre-defined, we cannot increase the size of the string. you can fit (length - 1) characters within this array.
+before we talk about the design and implemention. lets understand how fixed-size strings work.
 
-why (length - 1)? well, in C strings need to be terminated with a special character called '\0' also called as the null terminator. the importance of this is, various functions that operate on strings (for example: printf) expect a null terminator to signal the end of the string. if there is no null terminator, the behaviour is undefined and can cause issues. so its best to terminate strings with the null character.
+## about fixed-size strings
+
+`fixed-size` strings are exactly what they sound like. they are strings that have a **fixed-length**. 
+
+fundamentally, strings are just an **array of characters**. each character is a **byte (8-bits)**. however, there is one important thing about strings in C, they end with a **null terminator** represented as `\0` and the number `0` in ASCII.
+
+```
+why need a null terminator?
+
+well, null-terminators signal the end of a string. without it many functions that operate on strings could cause undefined behaviour.
+
+since strings are just an array of characters, the function that operates on a string keeps reading the memory locations (which can lead to accessing invalid memory causing undefined behaviour).
+```
+
+so, when we store a fixed-size string in C, we need to allocate `length + 1` bytes (the `+ 1` is for the null terminator). so, we can visualize a string stored in memory as:
+
+```
+--------------------------
+| h | e | l | l | o | \0 |
+--------------------------
+
+where each block is a single byte (8-bits)
+```
+
+creating and manipulating strings are way easier than dynamic strings (which i will talk about later), there is no complex memory management involved.
+
+however, these are some things we need to think about while implementing it:
+
+- avoid overflows when operating on strings.
+
+one of the biggest disadvantages of a fixed-size string is **size**. creating different length strings is really difficult because:
+- a small string may occupy only a portion of the fixed-size array, wasting memory.
+- a larger string might not even fit in the array.
+
 
 ## design and implementation
-`loom` is a minimal string library for C. since its main goal is to be minimal (atleast for now), it supports only the most critical features to operate on strings. these features will be listen later below.
+`loom` is a minimal string library for C. since its main goal is to be minimal (atleast for now), it supports only the most critical features to operate on strings. these features will be listed below.
 
-`loom` represents a fixed size string in a custom data type calld `FixedString`, which defined as follows:
+`loom` represents a fixed-size string in a custom data type callwd `LoomString`, which is defined as follows:
 ```c
 struct FixedString {
     char data[MAX_SIZE];
@@ -25,18 +56,23 @@ struct FixedString {
 }
 ```
 
-here are the core features that `loom` supports for fixed-size strings.
+since the `data` field is a `char` array and not a `pointer`, it is going to be allocated on the **stack**.
 
-\> creating strings
-    - create strings from string literals (char *str)
-    - create strings from another FixedString instance. 
+## features
 
-\> copying strings
-    - copy strings from string literals to a `FixedString` instance.
-    - copy strings from one `FixedString` instance to another.
+- [x] `ls_init`: creates an empty `LoomString` object. (creates an empty string)
 
-\> concat strings
-    - concat strings between two string literals.
-    - concat strings between two `FixedString` instances.
+- [x] `ls_create`: creates a `LoomString` from C strings.
 
+- [x] `ls_copy`: copies string/data content of one `LoomString` object to another.
+
+- [x] `ls_copy_str`: copies string/data content of a C string to a `LoomString` object.
+
+- [x] `ls_concat`: concats the string/data content from two `LoomString` objects.
+
+- [x] `ls_concat_str`: concatenates string/data content of a C string to a `LoomString` object.
+
+- [x] `ls_append_char`: appends a character to the `LoomString` object.
+
+- [x] `ls_append_str`: appends a string to the `LoomString` object.
 
